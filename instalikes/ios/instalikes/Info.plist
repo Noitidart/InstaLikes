@@ -52,5 +52,9 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>CFBundleURLSchemes</key>
+	<array>
+		<string>instalikes</string>
+	</array>
 </dict>
 </plist>
