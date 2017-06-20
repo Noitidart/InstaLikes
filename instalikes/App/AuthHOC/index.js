@@ -19,7 +19,7 @@ export const FAIL_REASON = {
 getDetail.cache(SERVICES.INSTAGRAM, {
     client_id: 'b475d7b6428f40caae8b747d09a78b41',
     client_secret: 'cac3817607bf472e8a938f41751676ef',
-    redirect_uri: `https://sundayschoolonline.org/auth/InstaLikes/${SERVICES.INSTAGRAM}/instalikes`
+    redirect_uri: `https://mlink.info/auth/InstaLikes/${SERVICES.INSTAGRAM}/instalikes`
 });
 
 function getDisplayName(WrappedComponent) {
@@ -67,18 +67,26 @@ function AuthHOC(WrappedComponent) {
             }
             */
 
-            const details = JSON.parse(decodeURIComponent(url.substr(url.indexOf('?') + 1)));
-            console.log('service:', details.service, 'details:', details);
+            let details;
+            try {
+                details = JSON.parse(decodeURIComponent(url.substr(url.indexOf('?') + 1)));
+            } catch(ignore){}
 
-            if (details.approved) {
-                this.setState(()=>({ status:STATUS.OK, info:details }));
-                Linking.removeEventListener('url', this.handleAuth);
-            } else if (!details.approved) {
-                console.log('user denied access');
-                this.setState(()=>({ status:STATUS.FAIL, fail_step:STATUS.OPENED, fail_msg:'You denied permission. You will not be able to use the Instagram features, please authenticate again and allow.' }));
+            if (details) {
+                console.log('service:', details.service, 'details:', details);
+                if (details.approved) {
+                    this.setState(()=>({ status:STATUS.OK, info:details }));
+                    Linking.removeEventListener('url', this.handleAuth);
+                } else if (!details.approved) {
+                    console.log('user denied access');
+                    this.setState(()=>({ status:STATUS.FAIL, fail_step:STATUS.OPENED, fail_msg:'You denied permission. You will not be able to use the Instagram features, please authenticate again and allow.' }));
+                } else {
+                    console.log('approved value not set in details, details:', details);
+                    this.setState(()=>({ status:STATUS.FAIL, fail_step:STATUS.OPENED, fail_msg:'The "approved" value was not sent. Please try authenicating again.' }));
+                }
             } else {
                 console.log('unknown url received:', url);
-                this.setState(()=>({ status:STATUS.FAIL, fail_step:STATUS.OPENED, fail_msg:'Unknown. Please try authenicating again.' }));
+                this.setState(()=>({ status:STATUS.FAIL, fail_step:STATUS.OPENED, fail_msg:'Unknown link passed. Please try authenicating again.' }));
             }
         }
         componentDidMount() {
